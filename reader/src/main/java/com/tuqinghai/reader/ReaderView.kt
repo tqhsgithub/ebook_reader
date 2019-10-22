@@ -177,7 +177,7 @@ class ReaderView : View {
         )
         val countLine = layout.lineCount
         val pageLine = ((height) / h).toInt()
-        var page = if (countLine % pageLine == 0) countLine / pageLine  else countLine / pageLine+1
+        var page = if (countLine % pageLine == 0) countLine / pageLine else countLine / pageLine + 1
         for (i in 1..page) {
 
             pageEndPosition.add(layout.getLineEnd(min(countLine - 1, pageLine * i - 1)))
@@ -189,11 +189,16 @@ class ReaderView : View {
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
+            if (showMenu) {
+                showMenu = false
+                onMenuListener?.close()
+                return true
+            }
             when {
                 event.x < width / 3 -> {
                     val c = current
                     current -= 1
-                    onPageChangeListener?.change(c, current, pageEndPosition.size,true)
+                    onPageChangeListener?.change(c, current, pageEndPosition.size, true)
                     return true
                 }
                 event.x > width - width / 3 -> {
@@ -220,7 +225,7 @@ class ReaderView : View {
 
 
     interface OnPageChangeListener {
-        fun change(before: Int, current: Int, count: Int,lastPage:Boolean =false)
+        fun change(before: Int, current: Int, count: Int, lastPage: Boolean = false)
     }
 
     interface OnMenuListener {

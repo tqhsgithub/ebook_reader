@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity() {
 
         adapter.setOnItemClickListener { _, _, position ->
             val book = adapter.data[position]
-            if (adapter.edit){
-                adapter.checkedMap[book.id] = !(adapter.checkedMap[book.id]?:false)
+            if (adapter.edit) {
+                adapter.checkedMap[book.id] = !(adapter.checkedMap[book.id] ?: false)
                 adapter.notifyDataSetChanged()
-            }else {
+            } else {
 
                 if (TextUtils.isEmpty(book.readLink) || !book.readLink.endsWith("html")) {
                     val intent = Intent(this, BookInfoActivity::class.java)
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         tvRemove.setOnClickListener {
-            val checked = adapter.data.filter { adapter.checkedMap[it.id]?:false }
+            val checked = adapter.data.filter { adapter.checkedMap[it.id] ?: false }
             checked.forEach {
                 it.inBookshelf = false
                 DataService.INSTANCE.saveBook(it)
@@ -78,7 +78,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         tvLocal.setOnClickListener {
-            val checked = adapter.data.filter { adapter.checkedMap[it.id]?:false }
+            val checked = adapter.data.filter { adapter.checkedMap[it.id] ?: false }
+
+            Observable.fromIterable(checked)
+                .flatMap { DataService.INSTANCE.saveBookAllChapter(it) }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe { p ->
+                    tvLocal.text = "离线中$p %"
+                }
 
         }
     }
